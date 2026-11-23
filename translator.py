@@ -42,7 +42,7 @@ def _load_env_file():
 _load_env_file()
 
 DEFAULT_GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_MODELS = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-flash-lite-latest"]
+GEMINI_MODELS = ["gemini-3-flash-preview", "gemini-3.5-flash-lite", "gemini-3.5-flash"]
 
 # ==============================================================================
 # 1. GEMINI FLASH TURBO ENGINE (SUPER-FAST 100X)
@@ -50,7 +50,7 @@ GEMINI_MODELS = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-flash-lite
 def translate_gemini_structured(
     items: List[Dict[str, Any]], 
     api_key: str = "", 
-    model: str = "gemini-3.5-flash", 
+    model: str = "gemini-3-flash-preview", 
     target_lang: str = "vi",
     retries: int = 3
 ) -> Dict[int, str]:
@@ -91,7 +91,7 @@ def translate_gemini_structured(
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{current_model}:generateContent?key={key}"
         for attempt in range(retries):
             try:
-                resp = session.post(url, json=payload, headers=headers, timeout=20)
+                resp = session.post(url, json=payload, headers=headers, timeout=30)
                 if resp.status_code == 200:
                     data = resp.json()
                     candidates = data.get("candidates", [])
@@ -136,16 +136,16 @@ def translate_gemini_structured(
                             if len(result_map) > 0:
                                 return result_map
                 elif resp.status_code == 429:
-                    print(f"[Gemini 429 on {current_model}] Sleeping 3s before retry...")
-                    time.sleep(3.0)
+                    print(f"[Gemini 429 on {current_model}] Sleeping 4s before retry...")
+                    time.sleep(4.0)
                     continue
                 elif resp.status_code in [404, 400, 503]:
                     # Switch immediately to next model in list
                     break
-                time.sleep(0.5)
+                time.sleep(1.0)
             except Exception as e:
                 print(f"[Gemini Exception on {current_model} attempt {attempt+1}] {e}")
-                time.sleep(0.5)
+                time.sleep(1.0)
 
     return {}
 
@@ -337,7 +337,11 @@ class DocumentTranslator:
                 if should_stop_check and should_stop_check():
                     break
 
-                trans_dict = translate_gemini_structured(chunk, self.api_key, model="gemini-3.5-flash", target_lang=target_lang)
+                trans_dict = translate_gemini_structured(chunk, self.api_key, model="gemini-3-flash-preview", target_lang=target_lang)
+                if not trans_dict:
+                    # Quick retry with backup model
+                    time.sleep(2.0)
+                    trans_dict = translate_gemini_structured(chunk, self.api_key, model="gemini-3.5-flash-lite", target_lang=target_lang)
 
                 for item in chunk:
                     idx = item["id"]

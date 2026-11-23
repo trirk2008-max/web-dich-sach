@@ -333,43 +333,81 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // SSE Stream
+  let pollInterval = null;
+
+  // SSE Stream + Polling Fallback
   function startTaskEventStream(taskId) {
+    localStorage.setItem('active_task_id', taskId);
+
     if (eventSource) {
       eventSource.close();
     }
+    if (pollInterval) {
+      clearInterval(pollInterval);
+    }
 
-    eventSource = new EventSource(`/api/task/${taskId}/events`);
-
-    eventSource.onmessage = (e) => {
+    // Direct Polling: Guarantees UI updates every 1.2s regardless of SSE browser buffering
+    pollInterval = setInterval(async () => {
       try {
-        const data = JSON.parse(e.data);
-        if (data.error) {
-          alert('Lỗi tác vụ: ' + data.error);
-          eventSource.close();
-          return;
+        const res = await fetch(`/api/task/${taskId}`);
+        if (res.ok) {
+          const data = await res.json();
+          updateProgressUI(data);
+
+          if (data.status === 'completed') {
+            clearInterval(pollInterval);
+            if (eventSource) eventSource.close();
+            onTranslationCompleted(taskId, data);
+          } else if (data.status === 'error') {
+            clearInterval(pollInterval);
+            if (eventSource) eventSource.close();
+            alert('Có lỗi trong quá trình dịch: ' + (data.error_message || 'Không xác định'));
+          } else if (data.status === 'stopped') {
+            clearInterval(pollInterval);
+            if (eventSource) eventSource.close();
+          }
         }
+      } catch (e) {}
+    }, 1200);
 
-        updateProgressUI(data);
+    try {
+      eventSource = new EventSource(`/api/task/${taskId}/events`);
 
-        if (data.status === 'completed') {
-          eventSource.close();
-          onTranslationCompleted(taskId, data);
-        } else if (data.status === 'error') {
-          eventSource.close();
-          alert('Có lỗi trong quá trình dịch: ' + (data.error_message || 'Không xác định'));
-        } else if (data.status === 'stopped') {
-          eventSource.close();
-          alert('Tác vụ đã được dừng.');
+      eventSource.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (data.error) {
+            alert('Lỗi tác vụ: ' + data.error);
+            eventSource.close();
+            return;
+          }
+
+          updateProgressUI(data);
+
+          if (data.status === 'completed') {
+            eventSource.close();
+            if (pollInterval) clearInterval(pollInterval);
+            onTranslationCompleted(taskId, data);
+          } else if (data.status === 'error') {
+            eventSource.close();
+            if (pollInterval) clearInterval(pollInterval);
+            alert('Có lỗi trong quá trình dịch: ' + (data.error_message || 'Không xác định'));
+          } else if (data.status === 'stopped') {
+            eventSource.close();
+            if (pollInterval) clearInterval(pollInterval);
+            alert('Tác vụ đã được dừng.');
+          }
+        } catch (err) {
+          console.error('SSE Parse Error', err);
         }
-      } catch (err) {
-        console.error('SSE Parse Error', err);
-      }
-    };
+      };
 
-    eventSource.onerror = (err) => {
-      console.warn('SSE Error / Reconnecting...', err);
-    };
+      eventSource.onerror = (err) => {
+        console.warn('SSE Error / Reconnecting...', err);
+      };
+    } catch (e) {
+      console.warn('SSE connection failed, running in pure polling mode');
+    }
   }
 
   function updateProgressUI(data) {
@@ -629,5 +667,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`(${escaped})`, 'gi');
     return text.replace(regex, '<mark>$1</mark>');
+  }
+
+  // Resume active task if exists in localStorage
+  const storedActiveTask = localStorage.getItem('active_task_id');
+  if (storedActiveTask) {
+    fetch(`/api/task/${storedActiveTask}`)
+      .then(r => r.json())
+      .then(taskData => {
+        if (taskData && (taskData.status === 'processing' || taskData.status === 'preparing')) {
+          uploadSection.classList.add('hidden');
+          progressSection.classList.remove('hidden');
+          currentTaskId = storedActiveTask;
+          updateProgressUI(taskData);
+          startTaskEventStream(storedActiveTask);
+        } else if (taskData && taskData.status === 'completed') {
+          uploadSection.classList.add('hidden');
+          completeSection.classList.remove('hidden');
+          currentTaskId = storedActiveTask;
+          onTranslationCompleted(storedActiveTask, taskData);
+        }
+      })
+      .catch(() => {});
   }
 });

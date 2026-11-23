@@ -340,7 +340,7 @@ def test_api_key(engine: str = Form(...), api_key: str = Form(...)):
     start = time.time()
     try:
         if engine == "gemini":
-            models_to_check = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-flash-lite-latest"]
+            models_to_check = ["gemini-3-flash-preview", "gemini-3.5-flash-lite", "gemini-3.5-flash"]
             payload = {
                 "contents": [{"parts": [{"text": "Hello"}]}],
                 "generationConfig": {"maxOutputTokens": 5}
@@ -438,7 +438,15 @@ async def stream_task_events(task_id: str):
 
             await asyncio.sleep(0.5)
 
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
 
 
 @app.get("/api/task/{task_id}/content")

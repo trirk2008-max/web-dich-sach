@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dịch Sách & Tài Liệu Dài - Hỗ Trợ Word & PDF Full Tiếng Việt</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+              800: '#5b21b6',
+              900: '#4c1d95',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-brand-600 selection:text-white">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-brand-500/30">
+          <i class="ph-bold ph-book-open-text text-2xl text-white"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+            Dịch Sách & Tài Liệu Dài
+          </h1>
+          <p class="text-xs text-brand-400 font-medium">Bất kể độ dài • Word & PDF • 100% Tiếng Việt</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <button id="btnOpenHistory" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition border border-slate-700">
+          <i class="ph-bold ph-clock-counter-clockwise text-base"></i>
+          <span>Lịch sử dịch</span>
+        </button>
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+          Sẵn sàng hoạt động
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
+
+    <!-- Hero Banner -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-950/60 via-slate-900 to-slate-950 p-6 sm:p-8 border border-slate-800 shadow-2xl">
+      <div class="absolute -top-24 -right-24 w-80 h-80 bg-brand-600/15 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="relative z-10 max-w-3xl space-y-3">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-300 text-xs font-semibold">
+          <i class="ph-fill ph-sparkle"></i>
+          <span>Xử lý văn bản không giới hạn số trang</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          Dịch trọn vẹn sách, giáo trình & tài liệu lớn sang Tiếng Việt
+        </h2>
+        <p class="text-sm text-slate-300 leading-relaxed">
+          Đưa tệp Word (<span class="text-brand-400 font-mono">.docx</span>) hoặc PDF (<span class="text-brand-400 font-mono">.pdf</span>) của bạn vào. Hệ thống tự động chia khối thông minh, dịch toàn bộ nội dung từ trang đầu đến trang cuối bất kể sách dài hàng trăm trang, bảo toàn định dạng và cho phép tải về dưới dạng Word, PDF hoặc Song ngữ.
+        </p>
+
+        <!-- Feature Pills -->
+        <div class="pt-2 flex flex-wrap gap-2 text-xs">
+          <span class="px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-300 border border-slate-700/60 flex items-center">
+            <i class="ph-bold ph-infinity text-brand-400 mr-1.5"></i> Không giới hạn dung lượng & số từ
+          </span>
+          <span class="px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-300 border border-slate-700/60 flex items-center">
+            <i class="ph-bold ph-file-doc text-blue-400 mr-1.5"></i> Giữ nguyên cấu trúc Word & Bảng biểu
+          </span>
+          <span class="px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-300 border border-slate-700/60 flex items-center">
+            <i class="ph-bold ph-columns text-emerald-400 mr-1.5"></i> Hỗ trợ xuất file Song ngữ Anh - Việt
+          </span>
+          <span class="px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-300 border border-slate-700/60 flex items-center">
+            <i class="ph-bold ph-lightning text-amber-400 mr-1.5"></i> Miễn phí 100% không cần key
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload & Configuration Form -->
+    <div id="uploadSection" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl">
+      
+      <!-- Dropzone -->
+      <div id="dropzone" class="relative group border-2 border-dashed border-slate-700 hover:border-brand-500 rounded-xl p-8 text-center cursor-pointer transition-all duration-200 bg-slate-950/40 hover:bg-brand-950/10">
+        <input type="file" id="fileInput" class="hidden" accept=".docx,.pdf,.txt,.md">
+        
+        <div id="dropzoneEmpty" class="space-y-4">
+          <div class="mx-auto w-16 h-16 rounded-2xl bg-slate-800/80 group-hover:bg-brand-500/20 text-slate-400 group-hover:text-brand-400 flex items-center justify-center transition shadow-inner">
+            <i class="ph-bold ph-cloud-arrow-up text-3xl"></i>
+          </div>
+          <div>
+            <p class="text-base font-semibold text-white">
+              Kéo thả tệp Word (.docx) hoặc PDF (.pdf) vào đây
+            </p>
+            <p class="text-xs text-slate-400 mt-1">
+              hoặc <span class="text-brand-400 underline underline-offset-4 font-medium">bấm để chọn tệp từ máy tính</span>
+            </p>
+          </div>
+          <div class="flex items-center justify-center space-x-4 text-xs text-slate-400 pt-1">
+            <span class="flex items-center"><i class="ph-fill ph-file-doc text-blue-400 mr-1"></i> Word (.docx)</span>
+            <span>•</span>
+            <span class="flex items-center"><i class="ph-fill ph-file-pdf text-rose-400 mr-1"></i> Adobe PDF (.pdf)</span>
+            <span>•</span>
+            <span class="flex items-center"><i class="ph-fill ph-file-text text-amber-400 mr-1"></i> Text (.txt)</span>
+          </div>
+        </div>
+
+        <!-- Selected File State -->
+        <div id="dropzoneSelected" class="hidden flex items-center justify-between p-4 bg-slate-800/80 rounded-lg border border-slate-700">
+          <div class="flex items-center space-x-3.5">
+            <div id="fileTypeIcon" class="w-12 h-12 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-2xl font-bold">
+              <i class="ph-bold ph-file-doc"></i>
+            </div>
+            <div class="text-left">
+              <p id="selectedFileName" class="text-sm font-semibold text-white truncate max-w-sm sm:max-w-md">filename.docx</p>
+              <p id="selectedFileSize" class="text-xs text-slate-400">2.4 MB</p>
+            </div>
+          </div>
+          <button id="btnRemoveFile" type="button" class="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-700 rounded-lg transition" title="Chọn file khác">
+            <i class="ph-bold ph-x text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Settings Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+        
+        <!-- Language Target -->
+        <div class="space-y-1.5">
+          <label class="block text-xs font-semibold text-slate-300">Ngôn ngữ nguồn</label>
+          <div class="relative">
+            <select id="sourceLang" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-brand-500 transition">
+              <option value="auto">🌐 Tự động nhận diện (Tiếng Anh, v.v.)</option>
+              <option value="en">🇺🇸 Tiếng Anh (English)</option>
+              <option value="zh-CN">🇨🇳 Tiếng Trung (Giản thể)</option>
+              <option value="ja">🇯🇵 Tiếng Nhật (Japanese)</option>
+              <option value="ko">🇰🇷 Tiếng Hàn (Korean)</option>
+              <option value="fr">🇫🇷 Tiếng Pháp (French)</option>
+              <option value="de">🇩🇪 Tiếng Đức (German)</option>
+              <option value="ru">🇷🇺 Tiếng Nga (Russian)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Target Language -->
+        <div class="space-y-1.5">
+          <label class="block text-xs font-semibold text-slate-300">Ngôn ngữ đích</label>
+          <div class="relative">
+            <select id="targetLang" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-brand-500 transition">
+              <option value="vi" selected>🇻🇳 Tiếng Việt (Vietnamese)</option>
+              <option value="en">🇺🇸 Tiếng Anh (English)</option>
+              <option value="zh-CN">🇨🇳 Tiếng Trung</option>
+              <option value="ja">🇯🇵 Tiếng Nhật</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Translation Engine -->
+        <div class="space-y-1.5 sm:col-span-2 lg:col-span-1">
+          <label class="block text-xs font-semibold text-slate-300">Cơ chế dịch thuật</label>
+          <div class="relative">
+            <select id="engineSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-brand-500 transition">
+              <option value="google" selected>⚡ Google Dịch Tự Động (Miễn phí, tốc độ cao)</option>
+              <option value="gemini">✨ Google Gemini Flash AI (Cần API Key)</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Advanced Options / Optional Gemini API Key -->
+      <div id="geminiKeyGroup" class="hidden space-y-1.5 p-4 rounded-xl bg-slate-950/60 border border-brand-500/30">
+        <div class="flex items-center justify-between">
+          <label class="block text-xs font-semibold text-brand-300">Gemini API Key (Tùy chọn)</label>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-xs text-brand-400 hover:underline">Lấy key miễn phí tại Google AI Studio &rarr;</a>
+        </div>
+        <input type="password" id="geminiApiKey" placeholder="Nhập key AIzaSy..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-brand-500">
+        <p class="text-xs text-slate-400">Gemini AI mang lại câu văn trau chuốt, mượt mà chuẩn phong cách văn học cho sách tiểu thuyết.</p>
+      </div>
+
+      <!-- Bilingual Toggle Option -->
+      <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-800/40 border border-slate-800">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+            <i class="ph-bold ph-columns text-lg"></i>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-slate-200">Chế độ xuất song ngữ (Bilingual)</p>
+            <p class="text-xs text-slate-400">Tạo thêm file Word chứa song song câu dịch tiếng Việt và câu gốc tiếng Anh (tiện đối chiếu và học tập)</p>
+          </div>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="bilingualToggle" class="sr-only peer" checked>
+          <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+        </label>
+      </div>
+
+      <!-- Action Button -->
+      <div class="pt-2">
+        <button id="btnStartTranslate" disabled class="w-full py-4 px-6 rounded-xl font-bold text-base flex items-center justify-center space-x-2 transition-all shadow-xl bg-slate-800 text-slate-500 cursor-not-allowed">
+          <i class="ph-bold ph-translate text-xl"></i>
+          <span>Bắt Đầu Dịch Toàn Bộ Tệp</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Active Progress Dashboard (Hidden until start) -->
+    <div id="progressSection" class="hidden bg-slate-900 border border-brand-500/30 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-brand-500 animate-ping"></span>
+            <h3 class="text-lg font-bold text-white" id="progressFileTitle">Đang dịch tài liệu...</h3>
+          </div>
+          <p class="text-xs text-slate-400 mt-1" id="progressSubTitle">Hệ thống đang tiến hành dịch tuần tự từng khối văn bản...</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button id="btnStopTask" class="px-3.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-semibold border border-rose-500/20 transition flex items-center space-x-1.5">
+            <i class="ph-bold ph-stop"></i>
+            <span>Dừng dịch</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Big Progress Bar -->
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs font-medium">
+          <span class="text-slate-400">Tiến độ tổng thể</span>
+          <span id="progressPercentText" class="text-brand-400 font-bold text-sm">0%</span>
+        </div>
+        <div class="w-full h-3.5 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
+          <div id="progressBar" class="h-full bg-gradient-to-r from-indigo-500 via-brand-500 to-fuchsia-500 rounded-full transition-all duration-300 w-0 shadow-lg shadow-brand-500/50"></div>
+        </div>
+      </div>
+
+      <!-- Real-time Stats Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 text-center">
+          <p class="text-xs text-slate-400">Đoạn văn đã dịch</p>
+          <p id="statParagraphs" class="text-lg sm:text-xl font-extrabold text-white mt-1">0 / 0</p>
+        </div>
+        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 text-center">
+          <p class="text-xs text-slate-400">Số từ đã dịch</p>
+          <p id="statWords" class="text-lg sm:text-xl font-extrabold text-emerald-400 mt-1">0 / 0</p>
+        </div>
+        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 text-center">
+          <p class="text-xs text-slate-400">Tốc độ dịch</p>
+          <p id="statSpeed" class="text-lg sm:text-xl font-extrabold text-brand-400 mt-1">0 từ/phút</p>
+        </div>
+        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 text-center">
+          <p class="text-xs text-slate-400">Thời gian còn lại (ETA)</p>
+          <p id="statEta" class="text-lg sm:text-xl font-extrabold text-amber-400 mt-1">Đang tính...</p>
+        </div>
+      </div>
+
+      <!-- Live Stream Console -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between text-xs text-slate-400">
+          <span class="flex items-center"><i class="ph-bold ph-terminal text-brand-400 mr-1.5"></i> Trực tiếp câu dịch vừa xử lý</span>
+          <span class="text-[11px] text-slate-500">Tự động cuộn</span>
+        </div>
+        <div id="liveLogsContainer" class="h-32 overflow-y-auto bg-slate-950 rounded-xl border border-slate-800 p-3 font-mono text-xs space-y-2 text-slate-300">
+          <p class="text-slate-500 italic">Đang chuẩn bị dữ liệu và kết nối máy chủ dịch...</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Completed Section & Download Options (Hidden until complete) -->
+    <div id="completeSection" class="hidden bg-slate-900 border border-emerald-500/40 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+        <div class="flex items-center space-x-3.5">
+          <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl font-bold">
+            <i class="ph-bold ph-check-circle"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-white">Dịch Hoàn Tất 100%!</h3>
+            <p class="text-xs text-slate-400" id="completeStatsSummary">Đã hoàn thành toàn bộ tài liệu.</p>
+          </div>
+        </div>
+        <button id="btnTranslateAnother" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center space-x-1.5">
+          <i class="ph-bold ph-plus"></i>
+          <span>Dịch tệp khác</span>
+        </button>
+      </div>
+
+      <!-- Download Action Cards -->
+      <div class="space-y-3">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Chọn định dạng tải xuống</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          
+          <!-- Word -->
+          <a id="downloadDocx" href="#" target="_blank" class="flex flex-col items-start p-4 rounded-xl bg-slate-800/80 hover:bg-blue-900/30 border border-slate-700 hover:border-blue-500 transition group">
+            <div class="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+              <i class="ph-bold ph-file-doc"></i>
+            </div>
+            <p class="text-sm font-bold text-white group-hover:text-blue-300">Tải File Word (.docx)</p>
+            <p class="text-xs text-slate-400 mt-1">Bản dịch chuẩn, giữ nguyên tiêu đề và bảng biểu</p>
+          </a>
+
+          <!-- PDF -->
+          <a id="downloadPdf" href="#" target="_blank" class="flex flex-col items-start p-4 rounded-xl bg-slate-800/80 hover:bg-rose-900/30 border border-slate-700 hover:border-rose-500 transition group">
+            <div class="w-10 h-10 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+              <i class="ph-bold ph-file-pdf"></i>
+            </div>
+            <p class="text-sm font-bold text-white group-hover:text-rose-300">Tải File PDF (.pdf)</p>
+            <p class="text-xs text-slate-400 mt-1">Font chữ Arial chuẩn tiếng Việt đẹp mắt</p>
+          </a>
+
+          <!-- Song Ngu -->
+          <a id="downloadBilingual" href="#" target="_blank" class="flex flex-col items-start p-4 rounded-xl bg-slate-800/80 hover:bg-emerald-900/30 border border-slate-700 hover:border-emerald-500 transition group">
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+              <i class="ph-bold ph-columns"></i>
+            </div>
+            <p class="text-sm font-bold text-white group-hover:text-emerald-300">Tải Song Ngữ (.docx)</p>
+            <p class="text-xs text-slate-400 mt-1">Gồm cả câu tiếng Việt và câu tiếng Anh đối chiếu</p>
+          </a>
+
+          <!-- Text -->
+          <a id="downloadTxt" href="#" target="_blank" class="flex flex-col items-start p-4 rounded-xl bg-slate-800/80 hover:bg-amber-900/30 border border-slate-700 hover:border-amber-500 transition group">
+            <div class="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+              <i class="ph-bold ph-file-text"></i>
+            </div>
+            <p class="text-sm font-bold text-white group-hover:text-amber-300">Tải Bản Text (.txt)</p>
+            <p class="text-xs text-slate-400 mt-1">Văn bản thuần UTF-8 nhẹ, dễ đọc</p>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- Online Interactive Reader -->
+      <div class="border-t border-slate-800 pt-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center space-x-2">
+            <i class="ph-bold ph-book-open text-brand-400 text-lg"></i>
+            <h4 class="text-base font-bold text-white">Đọc Trực Tiếp Trên Trình Duyệt</h4>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <div class="inline-flex rounded-lg bg-slate-800 p-0.5 border border-slate-700 text-xs">
+              <button id="btnViewVietnamese" class="px-3 py-1.5 rounded-md bg-brand-600 text-white font-medium transition">
+                Tiếng Việt
+              </button>
+              <button id="btnViewSideBySide" class="px-3 py-1.5 rounded-md text-slate-300 hover:text-white font-medium transition">
+                Song ngữ so sánh
+              </button>
+            </div>
+            <button id="btnCopyAll" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition flex items-center space-x-1">
+              <i class="ph-bold ph-copy"></i>
+              <span id="copyBtnText">Sao chép</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Bar within Document -->
+        <div class="relative">
+          <i class="ph-bold ph-magnifying-glass absolute left-3.5 top-3 text-slate-400"></i>
+          <input type="text" id="docSearchInput" placeholder="Tìm kiếm từ khóa trong bản dịch..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-brand-500">
+        </div>
+
+        <!-- Document Viewer Content Area -->
+        <div id="readerContainer" class="max-h-[500px] overflow-y-auto bg-slate-950 rounded-xl border border-slate-800 p-6 space-y-4 text-sm leading-relaxed text-slate-300">
+          <p class="text-slate-500 text-center py-8">Đang tải bản xem trước...</p>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- History Modal / Drawer -->
+  <div id="historyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <i class="ph-bold ph-clock-counter-clockwise text-brand-400 text-xl"></i>
+          <h3 class="font-bold text-base text-white">Lịch sử các tệp đã dịch</h3>
+        </div>
+        <button id="btnCloseHistory" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+      <div id="historyListContainer" class="flex-1 overflow-y-auto p-6 space-y-3">
+        <p class="text-center text-slate-500 py-6 text-sm">Chưa có lịch sử dịch.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
+    <p>Hệ thống dịch thuật tài liệu & sách dài không giới hạn • Chạy cục bộ bảo mật và riêng tư 100%</p>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

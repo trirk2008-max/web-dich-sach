@@ -4,6 +4,7 @@ import json
 import uuid
 import threading
 import asyncio
+import requests
 from typing import Dict, Any, Optional, List
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, StreamingResponse
@@ -34,7 +35,7 @@ def _load_env_file():
                     line = line.strip()
                     if "=" in line and not line.startswith("#"):
                         k, v = line.split("=", 1)
-                        os.environ.setdefault(k.strip(), v.strip())
+                        os.environ[k.strip()] = v.strip()
         except Exception:
             pass
 
@@ -339,23 +340,23 @@ def test_api_key(engine: str = Form(...), api_key: str = Form(...)):
     start = time.time()
     try:
         if engine == "gemini":
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={key}"
+            models_to_check = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-flash-lite-latest"]
             payload = {
                 "contents": [{"parts": [{"text": "Hello"}]}],
                 "generationConfig": {"maxOutputTokens": 5}
             }
-            resp = requests.post(url, json=payload, timeout=10)
-            elapsed = round((time.time() - start) * 1000)
-            if resp.status_code == 200:
-                return {"valid": True, "model": "Gemini 2.0 Flash", "latency_ms": elapsed, "message": f"Kết nối thành công ({elapsed}ms)! Tốc độ: ~300 trang/phút."}
-            else:
-                # Try 1.5 flash
-                url15 = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
-                resp15 = requests.post(url15, json=payload, timeout=10)
-                if resp15.status_code == 200:
-                    return {"valid": True, "model": "Gemini 1.5 Flash", "latency_ms": elapsed, "message": f"Kết nối Gemini 1.5 Flash thành công ({elapsed}ms)!"}
-                err_msg = resp.json().get("error", {}).get("message", resp.text[:100])
-                return JSONResponse(status_code=400, content={"valid": False, "message": f"Key không hợp lệ: {err_msg}"})
+            last_err = "Không thể kết nối"
+            for m in models_to_check:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={key}"
+                try:
+                    resp = requests.post(url, json=payload, timeout=10)
+                    elapsed = round((time.time() - start) * 1000)
+                    if resp.status_code == 200:
+                        return {"valid": True, "model": m, "latency_ms": elapsed, "message": f"Kết nối Gemini ({m}) thành công ({elapsed}ms)! Tốc độ: ~300 trang/phút."}
+                    last_err = resp.json().get("error", {}).get("message", resp.text[:100])
+                except Exception as e:
+                    last_err = str(e)
+            return JSONResponse(status_code=400, content={"valid": False, "message": f"Key không hợp lệ: {last_err}"})
 
         elif engine == "groq":
             url = "https://api.groq.com/openai/v1/chat/completions"

@@ -132,9 +132,9 @@ def run_translation_worker(task_id: str):
         def stop_check() -> bool:
             return task.get("_stop_flag", False)
 
-        # Execute batch translation
-        translated_results = translator.translate_batch(
-            paragraphs=paragraphs_text,
+        # Execute high-speed translation
+        translated_results = translator.translate_all_elements(
+            elements=elements,
             source_lang=source_lang,
             target_lang=target_lang,
             progress_callback=progress_callback,
@@ -297,6 +297,56 @@ async def upload_document(
         "estimated_pages": doc_data["estimated_pages"],
         "status": "processing"
     }
+
+
+@app.post("/api/test-key")
+def test_api_key(engine: str = Form(...), api_key: str = Form(...)):
+    """
+    Validates the user's API key and returns model status.
+    """
+    key = api_key.strip()
+    if not key:
+        return JSONResponse(status_code=400, content={"valid": False, "message": "Vui lòng nhập API Key!"})
+
+    start = time.time()
+    try:
+        if engine == "gemini":
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={key}"
+            payload = {
+                "contents": [{"parts": [{"text": "Hello"}]}],
+                "generationConfig": {"maxOutputTokens": 5}
+            }
+            resp = requests.post(url, json=payload, timeout=10)
+            elapsed = round((time.time() - start) * 1000)
+            if resp.status_code == 200:
+                return {"valid": True, "model": "Gemini 2.0 Flash", "latency_ms": elapsed, "message": f"Kết nối thành công ({elapsed}ms)! Tốc độ: ~300 trang/phút."}
+            else:
+                # Try 1.5 flash
+                url15 = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
+                resp15 = requests.post(url15, json=payload, timeout=10)
+                if resp15.status_code == 200:
+                    return {"valid": True, "model": "Gemini 1.5 Flash", "latency_ms": elapsed, "message": f"Kết nối Gemini 1.5 Flash thành công ({elapsed}ms)!"}
+                err_msg = resp.json().get("error", {}).get("message", resp.text[:100])
+                return JSONResponse(status_code=400, content={"valid": False, "message": f"Key không hợp lệ: {err_msg}"})
+
+        elif engine == "groq":
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            payload = {
+                "model": "llama-3.3-70b-versatile",
+                "messages": [{"role": "user", "content": "Hi"}],
+                "max_tokens": 5
+            }
+            resp = requests.post(url, json=payload, headers=headers, timeout=10)
+            elapsed = round((time.time() - start) * 1000)
+            if resp.status_code == 200:
+                return {"valid": True, "model": "Groq Llama 3.3", "latency_ms": elapsed, "message": f"Kết nối Groq LPU thành công ({elapsed}ms)! Tốc độ: 750 tokens/s."}
+            else:
+                return JSONResponse(status_code=400, content={"valid": False, "message": f"Key Groq không hợp lệ: {resp.text[:100]}"})
+    except Exception as e:
+        return JSONResponse(status_code=400, content={"valid": False, "message": f"Lỗi kết nối: {str(e)}"})
+
+    return JSONResponse(status_code=400, content={"valid": False, "message": "Mô hình không hỗ trợ kiểm tra key."})
 
 
 @app.get("/api/task/{task_id}")

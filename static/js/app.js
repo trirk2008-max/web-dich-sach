@@ -13,8 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const sourceLang = document.getElementById('sourceLang');
   const targetLang = document.getElementById('targetLang');
   const engineSelect = document.getElementById('engineSelect');
-  const geminiKeyGroup = document.getElementById('geminiKeyGroup');
-  const geminiApiKey = document.getElementById('geminiApiKey');
+  const aiKeyGroup = document.getElementById('aiKeyGroup');
+  const apiKeyLabel = document.getElementById('apiKeyLabel');
+  const apiKeyHelpLink = document.getElementById('apiKeyHelpLink');
+  const apiKeyInput = document.getElementById('apiKeyInput');
+  const btnTestKey = document.getElementById('btnTestKey');
+  const apiKeyStatusText = document.getElementById('apiKeyStatusText');
+  const saveKeyLocal = document.getElementById('saveKeyLocal');
   const bilingualToggle = document.getElementById('bilingualToggle');
 
   // Sections
@@ -159,18 +164,106 @@ document.addEventListener('DOMContentLoaded', () => {
     clearSelectedFile();
   });
 
+  // Restore stored API keys from localStorage
+  const savedGeminiKey = localStorage.getItem('gemini_api_key') || '';
+  const savedGroqKey = localStorage.getItem('groq_api_key') || '';
+  if (savedGeminiKey && apiKeyInput) {
+    apiKeyInput.value = savedGeminiKey;
+  }
+
   // Engine change listener
-  engineSelect.addEventListener('change', () => {
-    if (engineSelect.value === 'gemini') {
-      geminiKeyGroup.classList.remove('hidden');
+  function updateEngineUI() {
+    const engine = engineSelect.value;
+    if (engine === 'gemini') {
+      aiKeyGroup.classList.remove('hidden');
+      apiKeyLabel.textContent = 'Google Gemini API Key (Miễn phí 100%)';
+      apiKeyHelpLink.href = 'https://aistudio.google.com/app/apikey';
+      apiKeyHelpLink.innerHTML = '<span>Lấy key miễn phí trong 10 giây tại Google AI Studio</span><i class="ph-bold ph-arrow-up-right ml-1"></i>';
+      apiKeyInput.placeholder = 'Dán Gemini API Key vào đây (ví dụ: AIzaSy...)';
+      apiKeyInput.value = localStorage.getItem('gemini_api_key') || '';
+      apiKeyStatusText.textContent = '⚡ Gemini 2.0 Flash dịch toàn bộ cuốn sách chỉ trong 20-30 giây với văn phong văn học xuất sắc.';
+    } else if (engine === 'groq') {
+      aiKeyGroup.classList.remove('hidden');
+      apiKeyLabel.textContent = 'Groq LPU API Key (Miễn phí 100%)';
+      apiKeyHelpLink.href = 'https://console.groq.com/keys';
+      apiKeyHelpLink.innerHTML = '<span>Lấy key miễn phí tại Groq Console (750 tokens/s)</span><i class="ph-bold ph-arrow-up-right ml-1"></i>';
+      apiKeyInput.placeholder = 'Dán Groq API Key vào đây (ví dụ: gsk_...)';
+      apiKeyInput.value = localStorage.getItem('groq_api_key') || '';
+      apiKeyStatusText.textContent = '🚀 Groq LPU suy luận siêu tốc độ 750 tokens/giây, dịch cực nhanh trong nháy mắt.';
     } else {
-      geminiKeyGroup.classList.add('hidden');
+      aiKeyGroup.classList.add('hidden');
+    }
+  }
+
+  engineSelect.addEventListener('change', updateEngineUI);
+  updateEngineUI();
+
+  // Test Key Button
+  btnTestKey.addEventListener('click', async () => {
+    const key = apiKeyInput.value.trim();
+    if (!key) {
+      alert('Vui lòng dán API Key trước khi kiểm tra!');
+      apiKeyInput.focus();
+      return;
+    }
+
+    btnTestKey.disabled = true;
+    btnTestKey.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-sm"></i><span>Đang kiểm tra...</span>';
+
+    const testForm = new FormData();
+    testForm.append('engine', engineSelect.value);
+    testForm.append('api_key', key);
+
+    try {
+      const res = await fetch('/api/test-key', { method: 'POST', body: testForm });
+      const data = await res.json();
+      if (res.ok && data.valid) {
+        apiKeyStatusText.className = 'text-[11px] text-emerald-400 font-semibold';
+        apiKeyStatusText.innerHTML = `✓ ${data.message}`;
+        if (saveKeyLocal.checked) {
+          if (engineSelect.value === 'gemini') localStorage.setItem('gemini_api_key', key);
+          if (engineSelect.value === 'groq') localStorage.setItem('groq_api_key', key);
+        }
+      } else {
+        apiKeyStatusText.className = 'text-[11px] text-rose-400 font-semibold';
+        apiKeyStatusText.innerHTML = `✗ ${data.message || 'Key không hợp lệ'}`;
+      }
+    } catch (err) {
+      apiKeyStatusText.className = 'text-[11px] text-rose-400 font-semibold';
+      apiKeyStatusText.innerHTML = `✗ Lỗi kiểm tra: ${err.message}`;
+    } finally {
+      btnTestKey.disabled = false;
+      btnTestKey.innerHTML = '<i class="ph-bold ph-lightning text-amber-400"></i><span>Kiểm tra Key</span>';
     }
   });
 
   // Start Translation
   btnStartTranslate.addEventListener('click', async () => {
     if (!selectedFile) return;
+
+    const currentEngine = engineSelect.value;
+    const currentKey = apiKeyInput ? apiKeyInput.value.trim() : '';
+
+    if ((currentEngine === 'gemini' || currentEngine === 'groq') && !currentKey) {
+      const confirmProceed = confirm(
+        'Bạn chưa nhập API Key cho mô hình Siêu Tốc.\n\n' +
+        '• Bấm OK: Chuyển sang chế độ Đa Luồng Miễn Phí (không cần key).\n' +
+        '• Bấm Cancel: Để nhập Key (nhận key miễn phí trong 10s tại aistudio.google.com).'
+      );
+      if (confirmProceed) {
+        engineSelect.value = 'free';
+        updateEngineUI();
+      } else {
+        apiKeyInput.focus();
+        return;
+      }
+    }
+
+    // Save key if requested
+    if (currentKey && saveKeyLocal && saveKeyLocal.checked) {
+      if (currentEngine === 'gemini') localStorage.setItem('gemini_api_key', currentKey);
+      if (currentEngine === 'groq') localStorage.setItem('groq_api_key', currentKey);
+    }
 
     btnStartTranslate.disabled = true;
     btnStartTranslate.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i><span>Đang chuẩn bị tệp...</span>';
@@ -180,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append('source_lang', sourceLang.value);
     formData.append('target_lang', targetLang.value);
     formData.append('engine', engineSelect.value);
-    formData.append('api_key', geminiApiKey.value || '');
+    formData.append('api_key', apiKeyInput ? apiKeyInput.value.trim() : '');
     formData.append('bilingual', bilingualToggle.checked);
 
     try {

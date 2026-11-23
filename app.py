@@ -24,6 +24,22 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(TASKS_DIR, exist_ok=True)
 
+# Load .env file
+def _load_env_file():
+    env_path = os.path.join(BASE_DIR, ".env")
+    if os.path.exists(env_path):
+        try:
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if "=" in line and not line.startswith("#"):
+                        k, v = line.split("=", 1)
+                        os.environ.setdefault(k.strip(), v.strip())
+        except Exception:
+            pass
+
+_load_env_file()
+
 app = FastAPI(title="Dịch Sách & Tài Liệu Dài", version="1.0.0")
 
 app.add_middleware(
@@ -216,13 +232,22 @@ def index_page():
         return f.read()
 
 
+@app.get("/api/config")
+def get_config():
+    has_key = bool(os.environ.get("GEMINI_API_KEY"))
+    return {
+        "has_server_gemini_key": has_key,
+        "default_engine": "gemini" if has_key else "free"
+    }
+
+
 @app.post("/api/upload")
 async def upload_document(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     target_lang: str = Form("vi"),
     source_lang: str = Form("auto"),
-    engine: str = Form("google"),
+    engine: str = Form("gemini"),
     api_key: Optional[str] = Form(None),
     bilingual: bool = Form(False)
 ):
@@ -248,6 +273,9 @@ async def upload_document(
             os.remove(saved_path)
         raise HTTPException(status_code=400, detail=f"Không thể đọc nội dung tệp: {str(e)}")
 
+    # Use user-provided key or server-configured environment key
+    effective_key = api_key.strip() if (api_key and api_key.strip()) else os.environ.get("GEMINI_API_KEY", "")
+
     task_info = {
         "id": task_id,
         "filename": file.filename,
@@ -256,7 +284,7 @@ async def upload_document(
         "source_lang": source_lang,
         "target_lang": target_lang,
         "engine": engine,
-        "api_key": api_key.strip() if api_key else None,
+        "api_key": effective_key,
         "bilingual": bilingual,
         "status": "processing",
         "progress_percent": 0.0,

@@ -164,10 +164,21 @@ document.addEventListener('DOMContentLoaded', () => {
     clearSelectedFile();
   });
 
+  let serverHasGeminiKey = true;
+
+  // Fetch server config
+  fetch('/api/config')
+    .then(r => r.json())
+    .then(cfg => {
+      serverHasGeminiKey = cfg.has_server_gemini_key;
+      updateEngineUI();
+    })
+    .catch(() => {});
+
   // Restore stored API keys from localStorage
   const savedGeminiKey = localStorage.getItem('gemini_api_key') || '';
   const savedGroqKey = localStorage.getItem('groq_api_key') || '';
-  if (savedGeminiKey && apiKeyInput) {
+  if (apiKeyInput && savedGeminiKey) {
     apiKeyInput.value = savedGeminiKey;
   }
 
@@ -176,12 +187,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const engine = engineSelect.value;
     if (engine === 'gemini') {
       aiKeyGroup.classList.remove('hidden');
-      apiKeyLabel.textContent = 'Google Gemini API Key (Miễn phí 100%)';
+      apiKeyLabel.textContent = serverHasGeminiKey ? 'Google Gemini API Key (Máy chủ đã kích hoạt sẵn)' : 'Google Gemini API Key (Miễn phí 100%)';
       apiKeyHelpLink.href = 'https://aistudio.google.com/app/apikey';
-      apiKeyHelpLink.innerHTML = '<span>Lấy key miễn phí trong 10 giây tại Google AI Studio</span><i class="ph-bold ph-arrow-up-right ml-1"></i>';
-      apiKeyInput.placeholder = 'Dán Gemini API Key vào đây (ví dụ: AIzaSy...)';
+      apiKeyHelpLink.innerHTML = '<span>Lấy thêm key tại Google AI Studio</span><i class="ph-bold ph-arrow-up-right ml-1"></i>';
+      apiKeyInput.placeholder = serverHasGeminiKey ? '(Đã có sẵn key mặc định của bạn, có thể để trống hoặc dán key khác)' : 'Dán Gemini API Key vào đây...';
       apiKeyInput.value = localStorage.getItem('gemini_api_key') || '';
-      apiKeyStatusText.textContent = '⚡ Gemini 2.0 Flash dịch toàn bộ cuốn sách chỉ trong 20-30 giây với văn phong văn học xuất sắc.';
+      apiKeyStatusText.className = 'text-[11px] text-emerald-400 font-semibold';
+      apiKeyStatusText.innerHTML = serverHasGeminiKey 
+        ? '✓ Máy chủ đã tích hợp sẵn Gemini AI Key bản quyền (Tốc độ tối đa ~300 trang/phút, dịch cả cuốn sách trong 20-30s)'
+        : '💡 Gemini Flash dịch toàn bộ cuốn sách trong 20-30 giây với văn phong văn học xuất sắc.';
     } else if (engine === 'groq') {
       aiKeyGroup.classList.remove('hidden');
       apiKeyLabel.textContent = 'Groq LPU API Key (Miễn phí 100%)';
@@ -189,6 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
       apiKeyHelpLink.innerHTML = '<span>Lấy key miễn phí tại Groq Console (750 tokens/s)</span><i class="ph-bold ph-arrow-up-right ml-1"></i>';
       apiKeyInput.placeholder = 'Dán Groq API Key vào đây (ví dụ: gsk_...)';
       apiKeyInput.value = localStorage.getItem('groq_api_key') || '';
+      apiKeyStatusText.className = 'text-[11px] text-slate-400';
       apiKeyStatusText.textContent = '🚀 Groq LPU suy luận siêu tốc độ 750 tokens/giây, dịch cực nhanh trong nháy mắt.';
     } else {
       aiKeyGroup.classList.add('hidden');

@@ -25,13 +25,32 @@ session.mount("https://", adapter)
 session.mount("http://", adapter)
 
 
+# Load environment variables from .env if present
+def _load_env_file():
+    env_path = os.path.join(os.path.dirname(__file__), ".env")
+    if os.path.exists(env_path):
+        try:
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if "=" in line and not line.startswith("#"):
+                        k, v = line.split("=", 1)
+                        os.environ.setdefault(k.strip(), v.strip())
+        except Exception:
+            pass
+
+_load_env_file()
+
+DEFAULT_GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_MODELS = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.8-flash", "gemini-flash-latest"]
+
 # ==============================================================================
-# 1. GEMINI 2.0 FLASH / 1.5 FLASH TURBO ENGINE (SUPER-FAST 100X)
+# 1. GEMINI 2.0 FLASH / 3.5 FLASH TURBO ENGINE (SUPER-FAST 100X)
 # ==============================================================================
 def translate_gemini_structured(
     items: List[Dict[str, Any]], 
-    api_key: str, 
-    model: str = "gemini-2.0-flash", 
+    api_key: str = "", 
+    model: str = "gemini-3.5-flash-lite", 
     target_lang: str = "vi",
     retries: int = 3
 ) -> Dict[int, str]:
@@ -39,11 +58,10 @@ def translate_gemini_structured(
     Translates a large batch of paragraphs using Gemini Flash in JSON mode.
     Handles up to 50-100 paragraphs (20,000+ chars) in 1.5 seconds.
     """
-    if not items or not api_key:
+    key = api_key or os.environ.get("GEMINI_API_KEY", "")
+    if not items or not key:
         return {}
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-    
     # Format input as compact JSON
     input_data = [{"id": item["id"], "text": item["text"]} for item in items]
     
@@ -66,39 +84,42 @@ def translate_gemini_structured(
 
     headers = {"Content-Type": "application/json"}
 
-    for attempt in range(retries):
-        try:
-            resp = session.post(url, json=payload, headers=headers, timeout=45)
-            if resp.status_code == 200:
-                data = resp.json()
-                candidates = data.get("candidates", [])
-                if candidates:
-                    content_parts = candidates[0].get("content", {}).get("parts", [])
-                    if content_parts:
-                        raw_json = content_parts[0].get("text", "")
-                        # Parse JSON array
-                        parsed = json.loads(raw_json)
-                        result_map = {}
-                        if isinstance(parsed, list):
-                            for obj in parsed:
-                                if "id" in obj and "translated" in obj:
-                                    result_map[int(obj["id"])] = obj["translated"].strip()
-                        elif isinstance(parsed, dict):
-                            # In case model returned dict
-                            for k, v in parsed.items():
-                                try:
-                                    result_map[int(k)] = str(v).strip()
-                                except ValueError:
-                                    pass
-                        return result_map
-            elif resp.status_code in [404, 400]:
-                # If gemini-2.0-flash is unavailable, fall back to gemini-1.5-flash
-                if model != "gemini-1.5-flash":
-                    return translate_gemini_structured(items, api_key, model="gemini-1.5-flash", target_lang=target_lang, retries=retries)
-            time.sleep(1.0 * (attempt + 1))
-        except Exception as e:
-            print(f"[Gemini Exception attempt {attempt+1}] {e}")
-            time.sleep(1.0 * (attempt + 1))
+    # Try models in priority order
+    models_to_try = [model] + [m for m in GEMINI_MODELS if m != model]
+
+    for current_model in models_to_try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{current_model}:generateContent?key={key}"
+        for attempt in range(retries):
+            try:
+                resp = session.post(url, json=payload, headers=headers, timeout=30)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    candidates = data.get("candidates", [])
+                    if candidates:
+                        content_parts = candidates[0].get("content", {}).get("parts", [])
+                        if content_parts:
+                            raw_json = content_parts[0].get("text", "")
+                            parsed = json.loads(raw_json)
+                            result_map = {}
+                            if isinstance(parsed, list):
+                                for obj in parsed:
+                                    if "id" in obj and "translated" in obj:
+                                        result_map[int(obj["id"])] = obj["translated"].strip()
+                            elif isinstance(parsed, dict):
+                                for k, v in parsed.items():
+                                    try:
+                                        result_map[int(k)] = str(v).strip()
+                                    except ValueError:
+                                        pass
+                            if len(result_map) > 0:
+                                return result_map
+                elif resp.status_code in [404, 400, 503]:
+                    # Switch to next model in list
+                    break
+                time.sleep(0.5 * (attempt + 1))
+            except Exception as e:
+                print(f"[Gemini Exception on {current_model}] {e}")
+                time.sleep(0.5 * (attempt + 1))
 
     return {}
 
@@ -237,8 +258,8 @@ def translate_free_smart(text: str, source_lang: str = "auto", target_lang: str 
 # ==============================================================================
 class DocumentTranslator:
     def __init__(self, api_key: Optional[str] = None, engine: str = "gemini"):
-        self.api_key = api_key
-        self.engine = engine.lower()  # 'gemini', 'groq', or 'free' / 'google'
+        self.api_key = api_key if (api_key and api_key.strip()) else DEFAULT_GEMINI_KEY
+        self.engine = engine.lower() if engine else "gemini"
 
     def translate_all_elements(
         self,

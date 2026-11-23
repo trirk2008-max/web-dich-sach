@@ -146,13 +146,13 @@ def extract_document(file_path: str) -> Dict[str, Any]:
         estimated_pages = max(1, total_words // 350)
 
     elif ext in ['.pdf']:
-        reader = pypdf.PdfReader(file_path)
-        estimated_pages = len(reader.pages)
         elem_id = 0
-
-        for page_idx, page in enumerate(reader.pages):
-            try:
-                page_text = page.extract_text() or ""
+        try:
+            import pymupdf
+            doc = pymupdf.open(file_path)
+            estimated_pages = len(doc)
+            for page_idx, page in enumerate(doc):
+                page_text = page.get_text() or ""
                 paras = clean_pdf_text_into_paragraphs(page_text)
                 for p_text in paras:
                     words = len(p_text.split())
@@ -166,8 +166,28 @@ def extract_document(file_path: str) -> Dict[str, Any]:
                         "words": words
                     })
                     elem_id += 1
-            except Exception as e:
-                print(f"[PDF Extraction Error page {page_idx+1}] {e}")
+        except Exception as e_fitz:
+            print(f"[PyMuPDF fallback to pypdf: {e_fitz}]")
+            reader = pypdf.PdfReader(file_path)
+            estimated_pages = len(reader.pages)
+            for page_idx, page in enumerate(reader.pages):
+                try:
+                    page_text = page.extract_text() or ""
+                    paras = clean_pdf_text_into_paragraphs(page_text)
+                    for p_text in paras:
+                        words = len(p_text.split())
+                        total_words += words
+                        elements.append({
+                            "id": elem_id,
+                            "type": "paragraph",
+                            "page": page_idx + 1,
+                            "text": p_text,
+                            "style": "Normal",
+                            "words": words
+                        })
+                        elem_id += 1
+                except Exception as e:
+                    print(f"[PDF Extraction Error page {page_idx+1}] {e}")
 
     elif ext in ['.txt', '.md']:
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:

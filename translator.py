@@ -99,18 +99,29 @@ def translate_gemini_structured(
                         content_parts = candidates[0].get("content", {}).get("parts", [])
                         if content_parts:
                             raw_json = content_parts[0].get("text", "")
-                            parsed = json.loads(raw_json)
                             result_map = {}
-                            if isinstance(parsed, list):
-                                for obj in parsed:
-                                    if "id" in obj and "translated" in obj:
-                                        result_map[int(obj["id"])] = obj["translated"].strip()
-                            elif isinstance(parsed, dict):
-                                for k, v in parsed.items():
+                            try:
+                                parsed = json.loads(raw_json, strict=False)
+                                if isinstance(parsed, list):
+                                    for obj in parsed:
+                                        if "id" in obj and "translated" in obj:
+                                            result_map[int(obj["id"])] = str(obj["translated"]).strip()
+                                elif isinstance(parsed, dict):
+                                    for k, v in parsed.items():
+                                        try:
+                                            result_map[int(k)] = str(v).strip()
+                                        except ValueError:
+                                            pass
+                            except Exception:
+                                # Fallback: Regex extraction for resilient JSON recovery
+                                matches = re.findall(r'\{\s*"id"\s*:\s*(\d+)\s*,\s*"translated"\s*:\s*"((?:\\.|[^"\\])*)"', raw_json)
+                                for m_id, m_trans in matches:
                                     try:
-                                        result_map[int(k)] = str(v).strip()
-                                    except ValueError:
-                                        pass
+                                        clean_str = bytes(m_trans, "utf-8").decode("unicode_escape", errors="ignore")
+                                        result_map[int(m_id)] = clean_str.strip()
+                                    except Exception:
+                                        result_map[int(m_id)] = m_trans.strip()
+
                             if len(result_map) > 0:
                                 return result_map
                 elif resp.status_code in [404, 400, 503]:

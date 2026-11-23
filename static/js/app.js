@@ -259,7 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentEngine = engineSelect.value;
     const currentKey = apiKeyInput ? apiKeyInput.value.trim() : '';
 
-    if ((currentEngine === 'gemini' || currentEngine === 'groq') && !currentKey) {
+    // Only prompt for key if server doesn't already have one
+    if (currentEngine === 'gemini' && !currentKey && !serverHasGeminiKey) {
       const confirmProceed = confirm(
         'Bạn chưa nhập API Key cho mô hình Siêu Tốc.\n\n' +
         '• Bấm OK: Chuyển sang chế độ Đa Luồng Miễn Phí (không cần key).\n' +
@@ -272,6 +273,10 @@ document.addEventListener('DOMContentLoaded', () => {
         apiKeyInput.focus();
         return;
       }
+    } else if (currentEngine === 'groq' && !currentKey) {
+      alert('Vui lòng nhập Groq API Key!');
+      apiKeyInput.focus();
+      return;
     }
 
     // Save key if requested
@@ -280,8 +285,19 @@ document.addEventListener('DOMContentLoaded', () => {
       if (currentEngine === 'groq') localStorage.setItem('groq_api_key', currentKey);
     }
 
-    btnStartTranslate.disabled = true;
-    btnStartTranslate.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i><span>Đang chuẩn bị tệp...</span>';
+    // Switch views INSTANTLY (0.001s) - Never leave user waiting on the button!
+    uploadSection.classList.add('hidden');
+    completeSection.classList.add('hidden');
+    progressSection.classList.remove('hidden');
+
+    progressFileTitle.textContent = selectedFile.name;
+    progressSubTitle.textContent = '⚡ Đang nạp tệp và phân tích các trang tài liệu...';
+    progressBar.style.width = '10%';
+    progressPercentText.textContent = 'Khởi tạo...';
+    statParagraphs.textContent = 'Đang đọc...';
+    statWords.textContent = 'Đang đọc...';
+    statSpeed.textContent = 'Khởi động...';
+    statEta.textContent = 'Vài giây...';
 
     const formData = new FormData();
     formData.append('file', selectedFile);
@@ -305,22 +321,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const task = await res.json();
       currentTaskId = task.task_id;
 
-      // Switch views
-      uploadSection.classList.add('hidden');
-      completeSection.classList.add('hidden');
-      progressSection.classList.remove('hidden');
-
-      progressFileTitle.textContent = task.filename;
-      progressSubTitle.textContent = `Tổng cộng khoảng ${task.total_paragraphs} đoạn văn (${task.total_words.toLocaleString()} từ ~ ${task.estimated_pages} trang)`;
-      
-      statParagraphs.textContent = `0 / ${task.total_paragraphs}`;
-      statWords.textContent = `0 / ${task.total_words.toLocaleString()}`;
-
       // Start SSE progress tracking
       startTaskEventStream(task.task_id);
 
     } catch (err) {
       alert('Lỗi: ' + err.message);
+      progressSection.classList.add('hidden');
+      uploadSection.classList.remove('hidden');
       btnStartTranslate.disabled = false;
       btnStartTranslate.innerHTML = '<i class="ph-bold ph-translate text-xl"></i><span>Bắt Đầu Dịch Toàn Bộ Tệp</span>';
     }
@@ -366,6 +373,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateProgressUI(data) {
+    if (data.status === 'preparing') {
+      progressSubTitle.textContent = '⚡ Đang nạp nhanh các trang tài liệu vào bộ nhớ...';
+      statParagraphs.textContent = 'Đang nạp...';
+      statWords.textContent = 'Đang nạp...';
+      statSpeed.textContent = 'Khởi động...';
+      statEta.textContent = 'Vài giây...';
+      return;
+    }
+
+    if (data.total_paragraphs > 0) {
+      progressSubTitle.textContent = `Tổng cộng khoảng ${data.total_paragraphs} đoạn văn (${(data.total_words || 0).toLocaleString()} từ ~ ${data.estimated_pages || 1} trang)`;
+    }
+
     const percent = Math.min(100, Math.max(0, data.progress_percent || 0));
     progressBar.style.width = `${percent}%`;
     progressPercentText.textContent = `${percent.toFixed(1)}%`;

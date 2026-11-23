@@ -94,10 +94,17 @@ def run_translation_worker(task_id: str):
     try:
         elements = task.get("_elements", [])
         if not elements:
-            # Re-extract if missing
+            # Extract document in background without blocking upload
+            task["status"] = "preparing"
+            save_task_to_disk(task_id)
             doc_data = extract_document(task["original_path"])
             elements = doc_data["elements"]
             task["_elements"] = elements
+            task["total_words"] = doc_data["total_words"]
+            task["total_paragraphs"] = doc_data["total_paragraphs"]
+            task["estimated_pages"] = doc_data["estimated_pages"]
+            task["status"] = "processing"
+            save_task_to_disk(task_id)
 
         engine = task.get("engine", "google")
         api_key = task.get("api_key")
@@ -266,13 +273,6 @@ async def upload_document(
         content = await file.read()
         f.write(content)
 
-    try:
-        doc_data = extract_document(saved_path)
-    except Exception as e:
-        if os.path.exists(saved_path):
-            os.remove(saved_path)
-        raise HTTPException(status_code=400, detail=f"Không thể đọc nội dung tệp: {str(e)}")
-
     # Use user-provided key or server-configured environment key
     effective_key = api_key.strip() if (api_key and api_key.strip()) else os.environ.get("GEMINI_API_KEY", "")
 
@@ -280,19 +280,19 @@ async def upload_document(
         "id": task_id,
         "filename": file.filename,
         "original_path": saved_path,
-        "file_type": doc_data["file_type"],
+        "file_type": ext.lstrip('.'),
         "source_lang": source_lang,
         "target_lang": target_lang,
         "engine": engine,
         "api_key": effective_key,
         "bilingual": bilingual,
-        "status": "processing",
+        "status": "preparing",
         "progress_percent": 0.0,
-        "total_paragraphs": doc_data["total_paragraphs"],
+        "total_paragraphs": 0,
         "completed_paragraphs": 0,
-        "total_words": doc_data["total_words"],
+        "total_words": 0,
         "completed_words": 0,
-        "estimated_pages": doc_data["estimated_pages"],
+        "estimated_pages": 1,
         "speed_wpm": 0,
         "start_time": time.time(),
         "elapsed_seconds": 0,
@@ -306,7 +306,7 @@ async def upload_document(
             "txt": None,
             "docx_bilingual": None
         },
-        "_elements": doc_data["elements"],
+        "_elements": [],
         "_stop_flag": False
     }
 
@@ -320,10 +320,10 @@ async def upload_document(
     return {
         "task_id": task_id,
         "filename": file.filename,
-        "total_paragraphs": doc_data["total_paragraphs"],
-        "total_words": doc_data["total_words"],
-        "estimated_pages": doc_data["estimated_pages"],
-        "status": "processing"
+        "total_paragraphs": 0,
+        "total_words": 0,
+        "estimated_pages": 1,
+        "status": "preparing"
     }
 
 
